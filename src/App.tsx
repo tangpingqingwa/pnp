@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { 
-  Network, 
-  Plug, 
-  Settings, 
-  Activity, 
-  Database, 
-  AlertCircle, 
-  Search, 
+import React, { useState, useEffect } from 'react';
+import {
+  Network,
+  Plug,
+  Settings,
+  Activity,
+  Database,
+  AlertCircle,
+  Search,
   Filter,
   BarChart2,
   Clock,
@@ -169,8 +169,8 @@ function App() {
 
   const filteredDevices = devices.filter(device => {
     const matchesSearch = device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         device.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         device.ip.includes(searchTerm);
+      device.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      device.ip.includes(searchTerm);
     const matchesStatus = selectedStatus === 'all' || device.status === selectedStatus;
     return matchesSearch && matchesStatus;
   });
@@ -181,13 +181,60 @@ function App() {
       lastSeen: new Date().toLocaleString()
     }));
     setDevices(updatedDevices);
-    
+
     setLogs([
       {
         id: Date.now().toString(),
         timestamp: new Date().toLocaleString(),
         type: 'info',
         message: '数据已刷新'
+      },
+      ...logs
+    ]);
+  };
+
+  const addDevice = () => {
+    const newDevice: IEDDevice = {
+      id: Date.now().toString(),
+      name: 'New Device',
+      type: 'P645',
+      status: 'pending',
+      lastSeen: new Date().toLocaleString(),
+      ip: '192.168.1.103',
+      manufacturer: 'Unknown',
+      model: 'Unknown',
+      dataPoints: 0,
+      firmwareVersion: '1.0.0',
+      logicalDevices: [
+        {
+          name: 'PROT',
+          nodes: [
+            { name: 'LLN0', type: 'LLN0' }
+          ]
+        }
+      ]
+    };
+    setDevices([...devices, newDevice]);
+    setLogs([
+      {
+        id: Date.now().toString(),
+        timestamp: new Date().toLocaleString(),
+        type: 'info',
+        message: '新设备已添加'
+      },
+      ...logs
+    ]);
+  };
+
+  const deleteDevice = (deviceId: string) => {
+    const updatedDevices = devices.filter(device => device.id !== deviceId);
+    setDevices(updatedDevices);
+    setLogs([
+      {
+        id: Date.now().toString(),
+        timestamp: new Date().toLocaleString(),
+        type: 'info',
+        message: `设备 ${deviceId} 已删除`
       },
       ...logs
     ]);
@@ -211,9 +258,9 @@ function App() {
               <button onClick={refreshData} className="p-2 text-gray-400 hover:text-gray-600">
                 <RefreshCw className="h-5 w-5" />
               </button>
-              <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              <button onClick={addDevice} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                 <Plug className="h-4 w-4 mr-2" />
-                扫描新设备
+                添加设备
               </button>
             </div>
           </div>
@@ -223,44 +270,40 @@ function App() {
             <nav className="-mb-px flex space-x-8">
               <button
                 onClick={() => setActiveTab('devices')}
-                className={`${
-                  activeTab === 'devices'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                className={`${activeTab === 'devices'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center`}
               >
                 <Cpu className="h-4 w-4 mr-2" />
                 设备管理
               </button>
               <button
                 onClick={() => setActiveTab('config')}
-                className={`${
-                  activeTab === 'config'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                className={`${activeTab === 'config'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center`}
               >
                 <Settings className="h-4 w-4 mr-2" />
                 配置管理
               </button>
               <button
                 onClick={() => setActiveTab('monitor')}
-                className={`${
-                  activeTab === 'monitor'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                className={`${activeTab === 'monitor'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center`}
               >
                 <Activity className="h-4 w-4 mr-2" />
                 实时监控
               </button>
               <button
                 onClick={() => setActiveTab('logs')}
-                className={`${
-                  activeTab === 'logs'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                className={`${activeTab === 'logs'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center`}
               >
                 <Terminal className="h-4 w-4 mr-2" />
                 系统日志
@@ -339,7 +382,7 @@ function App() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-white overflow-hidden shadow rounded-lg">
                 <div className="p-5">
                   <div className="flex items-center">
@@ -411,7 +454,7 @@ function App() {
                   <h3 className="text-lg font-semibold">通信质量</h3>
                   <BarChart2 className="h-6 w-6 opacity-75" />
                 </div>
-                <div className="text-3xl font-bold mb-2">98.5%</div>
+                <div className="text-3xl font-bold mb-2">95.5%</div>
                 <p className="text-blue-100">过去24小时平均通信质量</p>
               </div>
 
@@ -469,7 +512,7 @@ function App() {
                         <tr className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <button 
+                              <button
                                 onClick={() => setShowDeviceDetails(showDeviceDetails === device.id ? null : device.id)}
                                 className="text-sm font-medium text-gray-900 flex items-center"
                               >
@@ -486,8 +529,8 @@ function App() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(device.status)}`}>
-                              {device.status === 'connected' ? '已连接' : 
-                               device.status === 'disconnected' ? '已断开' : '连接中'}
+                              {device.status === 'connected' ? '已连接' :
+                                device.status === 'disconnected' ? '已断开' : '连接中'}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -501,7 +544,7 @@ function App() {
                               <button className="text-blue-600 hover:text-blue-900">
                                 <Download className="h-4 w-4" />
                               </button>
-                              <button className="text-red-600 hover:text-red-900">
+                              <button className="text-red-600 hover:text-red-900" onClick={() => deleteDevice(device.id)}>
                                 断开
                               </button>
                             </div>
@@ -597,7 +640,7 @@ function App() {
                 <div className="space-y-2">
                   {devices.map(device => (
                     <div key={device.id} className="space-y-1">
-                      <button 
+                      <button
                         className="flex items-center w-full text-left px-2 py-1 rounded hover:bg-gray-100"
                         onClick={() => setSelectedDevice(device.id)}
                       >
@@ -632,7 +675,7 @@ function App() {
                     <History className="h-4 w-4 mr-2" />
                     版本历史
                   </button>
-                  <button className="inline- flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                  <button className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
                     <Upload className="h-4 w-4 mr-2" />
                     保存配置
                   </button>
@@ -651,6 +694,12 @@ function App() {
                               type="text"
                               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                               value={devices.find(d => d.id === selectedDevice)?.name || ''}
+                              onChange={(e) => {
+                                const updatedDevices = devices.map(d =>
+                                  d.id === selectedDevice ? { ...d, name: e.target.value } : d
+                                );
+                                setDevices(updatedDevices);
+                              }}
                             />
                           </div>
                           <div>
@@ -659,6 +708,12 @@ function App() {
                               type="text"
                               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                               value={devices.find(d => d.id === selectedDevice)?.ip || ''}
+                              onChange={(e) => {
+                                const updatedDevices = devices.map(d =>
+                                  d.id === selectedDevice ? { ...d, ip: e.target.value } : d
+                                );
+                                setDevices(updatedDevices);
+                              }}
                             />
                           </div>
                           <div>
@@ -767,8 +822,8 @@ function App() {
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="text-sm font-medium text-gray-900">{device.name}</h4>
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(device.status)}`}>
-                          {device.status === 'connected' ? '已连接' : 
-                           device.status === 'disconnected' ? '已断开' : '连接中'}
+                          {device.status === 'connected' ? '已连接' :
+                            device.status === 'disconnected' ? '已断开' : '连接中'}
                         </span>
                       </div>
                       <div className="space-y-3">
